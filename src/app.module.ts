@@ -17,7 +17,7 @@ import { databaseConfig } from './database.config';
       username: databaseConfig.username,
       password: databaseConfig.password,
       database: databaseConfig.database,
-      ssl: { rejectUnauthorized: false },
+      ssl: databaseConfig.useSsl ? { rejectUnauthorized: false } : false,
       entities: [Specialist],
       synchronize: false,
       logging: process.env.NODE_ENV !== 'production',
