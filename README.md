@@ -31,6 +31,27 @@
 $ npm install
 ```
 
+### Environment and database (Cloud SQL only — no local DB)
+
+The app uses **Google Cloud SQL (PostgreSQL)** as the only database. There is no local PostgreSQL setup.
+
+1. Copy `.env.example` to `.env`.
+2. **After** you create the Cloud SQL instance (see project root `PLAN.md` Phase 3.1), set `DATABASE_URL` in `.env` to your Cloud SQL connection string (e.g. Cloud Run socket: `postgresql://USER:PASSWORD@/DB_NAME?host=/cloudsql/PROJECT:REGION:INSTANCE`, or public IP if you use it).
+3. Run migrations **against Cloud SQL** to create the `specialists` table:
+
+```bash
+$ npm run build
+$ npm run migration:run
+```
+
+Or from TypeScript sources:
+
+```bash
+$ npm run migration:run:ts
+```
+
+The backend (and migrations) only run against the Cloud SQL database once it exists.
+
 ## Compile and run the project
 
 ```bash
