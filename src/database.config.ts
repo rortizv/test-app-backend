@@ -15,28 +15,34 @@ function parseDatabaseUrl(): {
   if (!databaseUrl) {
     throw new Error('DATABASE_URL is not set');
   }
-  const hasQuery = databaseUrl.includes('?');
-  const [urlPart, queryPart] = hasQuery ? databaseUrl.split('?') : [databaseUrl, ''];
-  const urlWithoutQuery = urlPart.replace(/\?.*$/, '');
-  // URL like postgresql://user:pass@/db has no host; Node's URL throws. Use placeholder host.
-  const urlForParse = urlWithoutQuery
-    .replace(/^postgresql:\/\//, 'https://')
-    .replace(/@\//, '@localhost/');
-  const parsed = new URL(urlForParse);
-  const database = (parsed.pathname?.slice(1) || '').replace(/%2F/g, '/');
+  try {
+    const hasQuery = databaseUrl.includes('?');
+    const [urlPart, queryPart] = hasQuery ? databaseUrl.split('?') : [databaseUrl, ''];
+    const urlWithoutQuery = urlPart.replace(/\?.*$/, '');
+    // URL like postgresql://user:pass@/db has no host; Node's URL throws. Use placeholder host.
+    const urlForParse = urlWithoutQuery
+      .replace(/^postgresql:\/\//, 'https://')
+      .replace(/@\//, '@localhost/');
+    const parsed = new URL(urlForParse);
+    const database = (parsed.pathname?.slice(1) || '').replace(/%2F/g, '/');
 
-  const params = new URLSearchParams(queryPart || '');
-  const socketHost = params.get('host');
-  const isSocket = typeof socketHost === 'string' && socketHost.startsWith('/cloudsql/');
+    const params = new URLSearchParams(queryPart || '');
+    const socketHost = params.get('host');
+    const isSocket = typeof socketHost === 'string' && socketHost.startsWith('/cloudsql/');
 
-  return {
-    host: isSocket ? socketHost : parsed.hostname,
-    port: parseInt(parsed.port || '5432', 10),
-    username: parsed.username,
-    password: parsed.password,
-    database,
-    useSsl: !isSocket,
-  };
+    return {
+      host: isSocket ? socketHost : parsed.hostname,
+      port: parseInt(parsed.port || '5432', 10),
+      username: parsed.username,
+      password: parsed.password,
+      database,
+      useSsl: !isSocket,
+    };
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    const safeUrl = databaseUrl.replace(/:([^:@]+)@/, ':****@');
+    throw new Error(`DATABASE_URL parse failed: ${msg}. URL (masked): ${safeUrl}`);
+  }
 }
 
 export const databaseConfig = parseDatabaseUrl();

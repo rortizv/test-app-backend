@@ -25,7 +25,10 @@ async function bootstrap() {
   console.log(`[Startup] Listening on 0.0.0.0:${port}`);
 }
 
-bootstrap().catch((err) => {
-  console.error('[Startup] Failed to start:', err);
+bootstrap().catch((err: unknown) => {
+  const message = err instanceof Error ? err.message : String(err);
+  const stack = err instanceof Error ? err.stack : undefined;
+  console.error('[Startup] Failed to start:', message);
+  if (stack) console.error(stack);
   process.exit(1);
 });

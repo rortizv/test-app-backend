@@ -78,6 +78,23 @@ $ npm run test:e2e
 $ npm run test:cov
 ```
 
+## Troubleshooting Cloud Run (container fails to start)
+
+If Cloud Run reports "container failed to start and listen on PORT=8080":
+
+1. **See the real error in logs**  
+   In [Cloud Run](https://console.cloud.google.com/run) → your service → **Logs** (or Observability → Logs). Filter by the failed revision. Look for `[Startup] Failed to start:` — the next line is the actual error (e.g. `DATABASE_URL parse failed`, DB connection error).
+
+2. **Reproduce locally with Docker** (same image as Cloud Run):
+   ```bash
+   docker build -t test-app-backend .
+   docker run --rm -e PORT=8080 -e "DATABASE_URL=postgresql://USER:PASS@/test-app-database?host=/cloudsql/PROJECT:REGION:INSTANCE" -p 8080:8080 test-app-backend
+   ```
+   Use your real `DATABASE_URL` (socket format for Cloud Run). You’ll see the same startup error in the terminal. On macOS, the socket path won’t exist, so you may see a DB connection error; that’s expected. The important part is whether the app crashes before listening (e.g. Invalid URL) or after (DB timeout).
+
+3. **Check Cloud SQL connection**  
+   The Cloud Run service account must have the **Cloud SQL Client** role (IAM) so the container can use the Cloud SQL socket.
+
 ## Deployment
 
 When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
