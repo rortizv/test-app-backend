@@ -15,8 +15,15 @@ function parseDatabaseUrl(): {
   useSsl: boolean;
 } {
   const databaseUrl = process.env.DATABASE_URL;
-  if (!databaseUrl) {
-    throw new Error('DATABASE_URL is not set');
+  if (!databaseUrl || !databaseUrl.trim()) {
+    throw new Error(
+      'DATABASE_URL is not set. Example for local PostgreSQL: postgresql://postgres:password@localhost:5432/your_db',
+    );
+  }
+  if (/@host\b/i.test(databaseUrl)) {
+    throw new Error(
+      'DATABASE_URL contains the literal host "host". Replace it with your real DB host (e.g. localhost or your server IP). Example: postgresql://user:password@localhost:5432/dbname',
+    );
   }
   try {
     const hasQuery = databaseUrl.includes('?');
