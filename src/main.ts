@@ -5,7 +5,9 @@ import { AppModule } from './app.module';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 
 async function bootstrap() {
+  console.log('[Startup] Bootstrapping NestJS...');
   const app = await NestFactory.create(AppModule);
+  console.log('[Startup] App module created');
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
@@ -20,9 +22,10 @@ async function bootstrap() {
   });
   const port = process.env.PORT ?? 3000;
   await app.listen(port, '0.0.0.0');
+  console.log(`[Startup] Listening on 0.0.0.0:${port}`);
 }
 
 bootstrap().catch((err) => {
-  console.error('Failed to start:', err);
+  console.error('[Startup] Failed to start:', err);
   process.exit(1);
 });

@@ -18,7 +18,11 @@ function parseDatabaseUrl(): {
   const hasQuery = databaseUrl.includes('?');
   const [urlPart, queryPart] = hasQuery ? databaseUrl.split('?') : [databaseUrl, ''];
   const urlWithoutQuery = urlPart.replace(/\?.*$/, '');
-  const parsed = new URL(urlWithoutQuery.replace(/^postgresql:\/\//, 'https://'));
+  // URL like postgresql://user:pass@/db has no host; Node's URL throws. Use placeholder host.
+  const urlForParse = urlWithoutQuery
+    .replace(/^postgresql:\/\//, 'https://')
+    .replace(/@\//, '@localhost/');
+  const parsed = new URL(urlForParse);
   const database = (parsed.pathname?.slice(1) || '').replace(/%2F/g, '/');
 
   const params = new URLSearchParams(queryPart || '');

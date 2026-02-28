@@ -2,8 +2,11 @@ import 'dotenv/config';
 import { DataSource } from 'typeorm';
 
 const databaseUrl = process.env.DATABASE_URL;
-const urlWithoutSsl = databaseUrl?.replace(/\?.*$/, '') ?? '';
-const parsed = new URL(urlWithoutSsl.replace(/^postgresql:\/\//, 'https://'));
+const urlWithoutQuery = databaseUrl?.replace(/\?.*$/, '') ?? '';
+const urlForParse = urlWithoutQuery
+  .replace(/^postgresql:\/\//, 'https://')
+  .replace(/@\//, '@localhost/');
+const parsed = new URL(urlForParse);
 
 export const AppDataSource = new DataSource({
   type: 'postgres',
